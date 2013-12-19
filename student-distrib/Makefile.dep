@@ -1,0 +1,26 @@
+boot.o: boot.S multiboot.h x86_desc.h types.h
+syscall_entry.o: syscall_entry.S x86_desc.h types.h syscall_entry.h
+x86_desc.o: x86_desc.S x86_desc.h types.h
+x86_idt.o: x86_idt.S
+debug.o: debug.c debug.h types.h lib.h syscalls.h fs.h rtc.h terminal.h \
+ mouse.h i8259.h x86_desc.h page.h
+fs.o: fs.c fs.h types.h lib.h syscalls.h rtc.h terminal.h mouse.h i8259.h \
+ x86_desc.h page.h
+i8259.o: i8259.c i8259.h types.h lib.h syscalls.h fs.h rtc.h terminal.h \
+ mouse.h x86_desc.h page.h
+kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h syscalls.h fs.h \
+ rtc.h terminal.h mouse.h i8259.h page.h debug.h x86_idt.h \
+ syscall_entry.h sched.h
+lib.o: lib.c lib.h types.h syscalls.h fs.h rtc.h terminal.h mouse.h \
+ i8259.h x86_desc.h page.h
+mouse.o: mouse.c mouse.h lib.h types.h syscalls.h fs.h rtc.h terminal.h \
+ x86_desc.h page.h i8259.h
+page.o: page.c page.h types.h x86_desc.h
+rtc.o: rtc.c rtc.h types.h syscalls.h lib.h page.h x86_desc.h fs.h \
+ terminal.h mouse.h i8259.h
+sched.o: sched.c sched.h lib.h types.h syscalls.h fs.h rtc.h terminal.h \
+ mouse.h i8259.h x86_desc.h page.h
+syscalls.o: syscalls.c syscalls.h lib.h types.h page.h x86_desc.h fs.h \
+ rtc.h terminal.h mouse.h i8259.h
+terminal.o: terminal.c terminal.h types.h syscalls.h lib.h page.h \
+ x86_desc.h fs.h rtc.h mouse.h i8259.h

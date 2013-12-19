@@ -1,0 +1,40 @@
+scheduler:
+	-triggered by interrupt handler of PIT
+	-push all the hardware context before call do_handle_pit, which will do context switch
+	-context switch : switch the ESP, EBP and EIP of new process (which will be the label "1" in the inline assembly)
+	-once it's done with context switch, it will return, restore the hardware context of the other program
+	-iret is done in the PIT interrupt handler
+	-since this is IRQ0, highest priority, no worries about sync issue
+	
+execute:
+	-parse the command, check if the file is there
+	-open the file (it calls file read)
+	-check the MAGIC number (ELF), and get the starting eip (bit 24-27)
+	-allocate page and pcb
+	-init the pcb, update the parent of the child
+	-copy the whole file image into the 128MB (plus something) at virtual memory
+	-MANUALLY update ds and push 5 things into the stack
+	-iret
+
+halt:
+	-mark the pcb_used array to NULL (indicate that the program has exit, and other program can take this place)
+	-mark the term_curr_pcb to its parent(for scheduler to know which process to switch to)
+	-restore ESP, EBP (similar to scheduler right? we sort of doing context switch from child to parent here)
+	-jmp to $ret_here, which is defined at the end of the execute
+	-at $ret_here, the syscall handler will pop of hardware context, and jump to resume userspace
+
+filesystem:
+	-understand the file structure
+	-so read_data will read the file content and put it into buf
+	-the disk image will have several blocks (shit tons of them)
+	-first block: boot block (or as I called it, master block)
+	-it has shit ton of data about the disk image, # inode blocks, #data block
+	-inode - info about a specific file like length of file, which data blocks belong to it
+	-data blocks - the content of the file. note that the data blocks for each file do not have to be consecutive.
+	-there is a thing called dentry. this contains info of a file (sort of like inode). Inode is unique. it's in the disk image. several dentry can point to same file (coz they belong to different programs hehehe)
+	-MUST UNDERSTAND WHAT read_dentry_by_name/index do
+	-So, the structure when a program reads a file:
+		-first, open the file - will call file_open, which will call
+		read_dentry_by_name.
+		-second, read the file, which will call read_data
+		-third, later on, it will close the file.

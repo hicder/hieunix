@@ -1,0 +1,114 @@
+--------- CHECK POINT 1 --------
+
+1. GDT: Compilation error. Compiler doesn't recognize gdt variable.
+Fix: We have to declare the variable gdt in x86_desc.S.
+Time to solve: 1 hour.
+
+2. IDT
+Description: IDT does not load, and divide by zero is not called when we do it.
+Fix: We did not realize there are different types of gates in IDT. We have to re-write the set_gate
+time to solve: 1 hour
+
+PIC initalization:
+PIC is initialized correctly at first try.
+
+3. RTC
+Description: RTC does not interrupt. 
+Reason: Hadn't unmasked line 2 on PIC for slave, which was where RTC was connected. Had to unmask line.
+Time to solve: 2 hours.
+
+4. Paging
+Description: We initially declared page table and directory int x86_desc.S file, but this failed to generate page fault when accessing non-present memory.
+solution: We fixed it by declaring two aligned global arrays in page.c file.  
+time to solve: 3 hours
+
+5. Keyboard initialization:
+Description: pressing keys was sending both break and make signals
+solution: had to add conditional to remove break signal and fixed scan table
+to get right character
+time to solve: 1.5 hours
+
+------ CHECKPOINT 2 ------
+
+File System:
+
+read_by_name and read_by_index:
+
+Initially, we increment our file system pointer which is of uint32_t type, then cast it into dentry_t * which points to a dentry of 64 bytes, this causes a bug because int pointer is incremented by 4 bytes.
+We ran our test function and couldn't read file name correctly and realized that bug, we fixed it by casting it into dentry_t* first, then increment it.
+time to solve: 1 hour
+
+read_data:
+
+We checked if end of file is reached at the end of this function, which makes the last read returns 0 instead of number of bytes read. This is inconsistent with the ls program which reads until the return value is 0. We fixed it by checking end of file before reading the data, so it only returns 0 when the offset is already greater than the file length.
+time to solve: 2 hours
+
+dir_open:
+
+In the open function, we extract all the file names in the directory into a string buffer because dir_read could be called multiple times. But we stored the actual file name  with their length into buffer and got wierd results. Then we looked at ls program and found out the names are read 32 bytes at a time, so we added null characters to the file names to fill up 32 bytes and fixed the issue.
+time to solve: 1.5 hours
+
+
+
+
+--------- CHECK POINT 3 --------
+
+
+syscall_entry:
+
+we had one more push than pop on the stack, which caused general protection exception
+time to solve: 4 hours
+
+Our edx is corrupted, so the paremeter passed into syscalls are wrong
+time to solve: 30 mins
+
+incorrectly-written syscall handler led to general protection fault (GPF)
+time to solve: 6 hours
+
+
+
+Terminal:
+
+Our terminal read function is totally wrong. we rewrote it.
+time to solve: 2 hours
+
+fixed a lot of terminal bugs, fixed terminal write to scroll properly.
+time to solve: 1 hour
+
+terminal was printing characters for escape, tab and print screen. Solve: we added if statement to check for these characters
+time to solve: 15 mins
+
+We were not clearing the buffer properly so after ctrl+L there would be garbage when the user hit enter. we cleared the buffer properly.
+time to solve: 30 mins
+
+
+
+Execute:
+
+we didn't initialize fops-table correctly which lead to page fault. 
+time to solve: 1 hour
+
+Halt:
+
+we didn't save the parent esp0 properly, so the halt was not properly returning control to the parent. we saved it properly in the PCB.
+time to solve: 3 hours
+
+
+
+--------- CHECK POINT 4 --------
+Multiple terminal
+When switched back to terminal 1, we can't type. Error: Our putc() function didn't put to the right screen
+Time to solve: 1 day
+
+Multiple terminal
+When running 6 shells, and switch to unopened terminal, we are not prevented to do that
+Time to solve: 1 hour.
+
+Scheduler
+Scheduler crashes the OS. Error: Our approach is totally wrong. We manually restore all registers and do iret. Too error prone
+Solution: Rewrite
+Time to solve: 3 days
+
+Scheduler 
+ESP is not updated after switching to terminal 2. Error: we didn't update EBP, so the compiler will automatically restore ESP
+Time to solve: 3 hours
